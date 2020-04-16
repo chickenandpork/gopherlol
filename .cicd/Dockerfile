@@ -2,21 +2,8 @@ FROM golang:1.14-alpine AS builder
 WORKDIR /build
 ADD . /build
 
-# "github.com/mattn/go-sqlite3" needs gcc (libc-dev for headers)
-#RUN apk add git protobuf gcc libc-dev
-
-#RUN for p in github.com/golang/protobuf/proto \
-#    "github.com/golang/protobuf/protoc-gen-go" \
-#    "github.com/jinzhu/gorm" \
-#    "github.com/mattn/go-sqlite3" \
-#    "google.golang.org/grpc" \
-#    "google.golang.org/grpc/credentials" \
-#    "google.golang.org/grpc/testdata" \
-#    ; do GO111MODULES=off go get ${p}; done
-
-#RUN protoc -Iproto --go_out=plugins=grpc:grpc proto/dailylog.proto
-
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags '-w -extldflags "-static"' -o gopherlol
+
 
 FROM scratch
 COPY --from=builder /build/gopherlol /gopherlol

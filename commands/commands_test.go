@@ -59,7 +59,10 @@ func TestHandler(t *testing.T) {
 				"<li><strong>g</strong>, takes args</li>" +
 				"<li><strong>help</strong></li>" +
 				"<li><strong>list</strong></li>" +
-				"<li><strong>so</strong>, takes args</li></ul>"},
+				"<li><strong>so</strong>, takes args</li>" +
+				"<li><strong>author</strong></li>" + // as noted, TODO: make only one author key
+				"<li><strong>go</strong>, takes args</li>" +
+				"</ul>"},
 		{
 			"list",
 			"/?q=help", http.StatusOK,
@@ -68,7 +71,14 @@ func TestHandler(t *testing.T) {
 				"<li><strong>g</strong>, takes args</li>" +
 				"<li><strong>help</strong></li>" +
 				"<li><strong>list</strong></li>" +
-				"<li><strong>so</strong>, takes args</li></ul>"},
+				"<li><strong>so</strong>, takes args</li>" +
+				"<li><strong>author</strong></li>" + // as noted, TODO: make only one author key
+				"<li><strong>go</strong>, takes args</li>" +
+				"</ul>"},
+		{
+			"Go",
+			"/?q=go Errorf", http.StatusSeeOther,
+			"<a href=\"https://go.snowcone.org/Errorf\">See Other</a>."},
 	}
 
 	for _, test := range tests {

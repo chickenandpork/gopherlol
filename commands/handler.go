@@ -21,23 +21,25 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if cmdName == "List" || cmdName == "Help" {
-		commandsType := reflect.TypeOf(&Commands{})
-
 		var html strings.Builder
 		html.WriteString("<h1>gopherlol command list</h1>")
 		html.WriteString("<ul>")
-		for i := 0; i < commandsType.NumMethod(); i++ {
-			method := commandsType.Method(i)
+		for _, source := range GetCommands() {
+			commandsType := reflect.TypeOf(source)
 
-			takesArgs := ""
-			if method.Type.NumIn() == 2 {
-				takesArgs = ", takes args"
+			for i := 0; i < commandsType.NumMethod(); i++ {
+				method := commandsType.Method(i)
+
+				takesArgs := ""
+				if method.Type.NumIn() == 2 {
+					takesArgs = ", takes args"
+				}
+				html.WriteString(fmt.Sprintf(
+					"<li><strong>%s</strong>%s</li>",
+					strings.ToLower(method.Name),
+					takesArgs,
+				))
 			}
-			html.WriteString(fmt.Sprintf(
-				"<li><strong>%s</strong>%s</li>",
-				strings.ToLower(method.Name),
-				takesArgs,
-			))
 		}
 		html.WriteString("</ul>")
 
@@ -47,35 +49,44 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cmdMethod := reflect.ValueOf(commandsObject).MethodByName(cmdName)
+	/* else */
+	// TODO: Still need to special-case the :Author() function so that a list is presented
+	// similar to the "list" or "help" options.  THis allows us to leverage the signature
+	// method of the COmmandSource ot provide a list of contributing sources.
+	for _, source := range GetCommands() {
+		cmdMethod := reflect.ValueOf(source).MethodByName(cmdName)
 
-	if cmdMethod == reflect.ValueOf(nil) {
-		// cmdMethod not found => fall back to google
-		url := fmt.Sprintf("https://www.google.com/#q=%s", url.QueryEscape(q))
-		http.Redirect(w, r, url, http.StatusSeeOther)
-		return
+		if cmdMethod != reflect.ValueOf(nil) {
+			fmt.Sprintf("found: %+v\n", cmdMethod)
+			url := ""
+			cmdMethodNumIn := cmdMethod.Type().NumIn()
+			if cmdMethodNumIn == 0 {
+				res := cmdMethod.Call([]reflect.Value{})
+				url = res[0].String()
+			} else if cmdMethodNumIn == 1 {
+				in := []reflect.Value{reflect.ValueOf(cmdArg)}
+				res := cmdMethod.Call(in)
+				url = res[0].String()
+			} else {
+				// cmdMethod was wrongly defined.
+				// We currently only support cmdMethods with 0 or 1 parameters
+				http.Error(
+					w,
+					http.StatusText(http.StatusInternalServerError),
+					http.StatusInternalServerError,
+				)
+				return
+			}
+
+			http.Redirect(w, r, url, http.StatusSeeOther)
+			return
+		}
 	}
+	/* else */
+	fmt.Printf("not found: c: %s a: %s a[]: %+v\n", cmdName, cmdArg, arr)
 
-	url := ""
-	cmdMethodNumIn := cmdMethod.Type().NumIn()
-	if cmdMethodNumIn == 0 {
-		res := cmdMethod.Call([]reflect.Value{})
-		url = res[0].String()
-	} else if cmdMethodNumIn == 1 {
-		in := []reflect.Value{reflect.ValueOf(cmdArg)}
-		res := cmdMethod.Call(in)
-		url = res[0].String()
-	} else {
-		// cmdMethod was wrongly defined.
-		// We currently only support cmdMethods with 0 or 1 parameters
-		http.Error(
-			w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
+	// cmdMethod not found => fall back to google
+	url := fmt.Sprintf("https://www.google.com/#q=%s", url.QueryEscape(q))
 	http.Redirect(w, r, url, http.StatusSeeOther)
 	return
 }

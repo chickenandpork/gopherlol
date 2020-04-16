@@ -2,7 +2,7 @@ def commitHash
 
 pipeline {
   environment {
-    registry = "chickenandpork/gopherlol"
+    registry = "chickenandporn/gopherlol"
     dockerImage = ''
   }
   agent any
