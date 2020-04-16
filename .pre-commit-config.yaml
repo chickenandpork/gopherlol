@@ -1,0 +1,40 @@
+# To install the dependencies for this file:
+# pip install pre-commit
+#   (really, "sudo python3 -m pip install pre-commit")
+# pre-commit install --allow-missing-config
+#
+# yamllint to check only this one .precommit file?  Perhaps :)
+# Check all the things!  Check the checkers!
+---
+repos:
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.11.0
+    hooks:
+      - id: yamllint
+        args: [
+          '-d',
+          '{extends: relaxed, rules: {line-length: {max: 120}}}'
+        ]
+  - repo: git://github.com/dnephin/pre-commit-golang
+    sha: v0.3.3
+    hooks:
+      - id: go-fmt
+      # - id: go-vet
+      # - id: go-lint
+      # - id: gometalinter
+      # - id: golangci-lint
+      # - id: go-critic
+      - id: go-unit-tests
+      - id: go-build
+  - repo: https://github.com/troian/pre-commit-golang
+    sha: HEAD
+    hooks:
+      - id: go-fmt
+    #  - id: go-build		# this is a more opinionated build :)
+    #  - id: go-metalinter
+    #    args:
+    #      - --deadline=60s
+    #      - --cyclo-over=20
+    #      - --dupl-threshold=100
+    #      # - --exclude=corefoundation.go
+    #      # - --disable=gotype
