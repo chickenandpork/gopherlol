@@ -3,8 +3,6 @@ package commands
 import (
 	"errors"
 	"fmt"
-
-	//"net/url"
 	"sync"
 )
 
