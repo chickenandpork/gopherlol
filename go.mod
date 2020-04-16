@@ -1,5 +1,5 @@
-module github.com/markusdosch/gopherlol
+module github.com/chickenandpork/gopherlol
 
-go 1.12
+go 1.14
 
 require github.com/stretchr/testify v1.5.1

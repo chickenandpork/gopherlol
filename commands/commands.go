@@ -5,6 +5,10 @@ import (
 	"net/url"
 )
 
+func init() {
+	RegisterCommands(&Commands{})
+}
+
 type Commands struct{}
 
 func (c *Commands) Help() {
