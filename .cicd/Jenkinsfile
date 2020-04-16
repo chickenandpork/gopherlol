@@ -1,0 +1,53 @@
+def commitHash
+
+pipeline {
+  environment {
+    registry = "chickenandpork/gopherlol"
+    dockerImage = ''
+  }
+  agent any
+
+  stages {
+    stage('Clone repository') {
+      steps {
+        checkout scm
+        script {commitHash = sh(returnStdout: true, script: 'git rev-parse --short HEAD') }
+      }
+    }
+
+    stage('Building image') {
+      steps {
+	retry (3) {
+          script {
+            dockerImage = docker.build(registry + ":$BUILD_NUMBER", "-f .cicd/Dockerfile .")
+	    sh "docker tag " + registry + ":$BUILD_NUMBER " + registry + ":latest"
+          }
+        }
+      }
+    }
+
+    // stage('Testing image') {
+    //   steps {
+    //     script {
+    //       docker.image(registry + ":$BUILD_NUMBER").inside {
+    //         sh './gopherlol -host localhost:8080 -e2e'
+    //       }
+    //     }
+    //   }
+    // }
+
+    stage('Deploy Image') {
+      steps {
+        script {
+          timeout(time: 60, unit: 'MINUTES') {  /* make sure we have ample time for slow intarwebz */
+            docker.withRegistry('http://registry.hub.docker.com', 'docker-hub-credentials') {
+              dockerImage.push("${env.BUILD_NUMBER}") /* BUILD_NUMBER magic var provided by Jenkins */
+              dockerImage.push("${commitHash}")       /* commitHash collected in 'Clone repository' */
+              dockerImage.push("latest")              /* convenience */
+            }
+          }
+        }
+      }
+    }
+  }
+}
