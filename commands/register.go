@@ -2,10 +2,11 @@ package commands
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 )
 
+// CommandSource defines the only required method: attribution of the commands source.  This is
+// less about copyright or notoriety, more about "whom should I ask for details, help, support?"
 type CommandSource interface {
 	Author() string
 }
@@ -15,14 +16,16 @@ type CommandSource interface {
 var (
 	commandsInstance []CommandSource
 	commandsOnce     sync.Once
+
+	logsink LogSink = &DiscardingLogger{} // default to running quietly
 )
 
-// getCommands is a singleton-enabling function: it returns the singleton, instantiating if necessary
+// GetCommands is a singleton-enabling function: it returns the singleton, instantiating if necessary
 func GetCommands() []CommandSource {
 	if commandsInstance == nil {
 		commandsOnce.Do(func() {
 			commandsInstance = make([]CommandSource, 0)
-			fmt.Println("allocating new COmmandSource[]")
+			logsink.Println("allocating new COmmandSource[]")
 		})
 	}
 	return commandsInstance
@@ -31,16 +34,19 @@ func GetCommands() []CommandSource {
 // GetCommands returns a value to side-step any write-backs
 //func GetCommands() []CommandSource { s := getCommands() ; return *s; }
 
+// RegisterCommands -- called directly or inside an `init()` function -- is used to register
+// another source of commands by giving an instance of the class which defines those commands.  See
+// `commands_test.go` for an example of the `init()` registration, or `register_test.go` for an
+// example calling directly.
 func RegisterCommands(c CommandSource) error {
-	fmt.Println("registering new COmmandSource[]")
+	logsink.Println("registering new COmmandSource[]")
 	if s := GetCommands(); s != nil {
 
-		fmt.Println("COmmandSource[] len is ", len(commandsInstance))
+		logsink.Println("COmmandSource[] len is ", len(commandsInstance))
 		commandsInstance = append(commandsInstance, c)
-		fmt.Print("COmmandSource[] len is ", len(commandsInstance))
+		logsink.Print("COmmandSource[] len is ", len(commandsInstance))
 
 		return nil
-	} else {
-		return errors.New("Commands Struct is Nil")
 	}
+	return errors.New("Commands Struct is Nil")
 }

@@ -10,6 +10,9 @@ import (
 
 var commandsObject = new(Commands)
 
+// Handler is the http dispatcher and responder: it either derives a list of available commands
+// (sending back directly), or dispatches the search query to that set of commands (wrapping the
+// response as a HTTP Redirect which should result in a HTTP/1 302)
 func Handler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 
@@ -52,7 +55,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	/* else */
 	// TODO: Still need to special-case the :Author() function so that a list is presented
 	// similar to the "list" or "help" options.  THis allows us to leverage the signature
-	// method of the COmmandSource ot provide a list of contributing sources.
+	// method of the CommandSource to provide a list of contributing sources.
 	for _, source := range GetCommands() {
 		cmdMethod := reflect.ValueOf(source).MethodByName(cmdName)
 

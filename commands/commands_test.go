@@ -1,8 +1,10 @@
 package commands
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 
 	"testing"
@@ -10,9 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func init() {
+	RegisterCommands(&TestMockExtensionCommands{})
+}
+
 // TestHandler codifies the expected behavior of the Handler() to ensure that the freedom to
 // change/refactor/extend does not break current functionality
 func TestHandler(t *testing.T) {
+	logsink = &TestLogger{t: t}
 	tests := []struct {
 		name     string
 		query    string
@@ -61,6 +68,8 @@ func TestHandler(t *testing.T) {
 				"<li><strong>list</strong></li>" +
 				"<li><strong>so</strong>, takes args</li>" +
 				"<li><strong>author</strong></li>" + // as noted, TODO: make only one author key
+				"<li><strong>fbgs</strong>, takes args</li>" +
+				"<li><strong>fullbiggrepsearch</strong>, takes args</li>" +
 				"<li><strong>go</strong>, takes args</li>" +
 				"</ul>"},
 		{
@@ -73,12 +82,14 @@ func TestHandler(t *testing.T) {
 				"<li><strong>list</strong></li>" +
 				"<li><strong>so</strong>, takes args</li>" +
 				"<li><strong>author</strong></li>" + // as noted, TODO: make only one author key
+				"<li><strong>fbgs</strong>, takes args</li>" +
+				"<li><strong>fullbiggrepsearch</strong>, takes args</li>" +
 				"<li><strong>go</strong>, takes args</li>" +
 				"</ul>"},
 		{
 			"Go",
 			"/?q=go Errorf", http.StatusSeeOther,
-			"<a href=\"https://go.snowcone.org/Errorf\">See Other</a>."},
+			"<a href=\"https://go.example.com/Errorf\">See Other</a>."},
 	}
 
 	for _, test := range tests {
@@ -115,4 +126,37 @@ func TestHandler(t *testing.T) {
 			assert.Equalf(t, expected, observed, "handler returned incorrect text: expected %v observed %v", expected, observed)
 		})
 	}
+}
+
+// TestMockExtensionCommands shows a possible extnesion of the commands and is intended to allow
+// testing of modular extensions in general.  To see how little is needed to extend gopherlol, see
+// github.com/chickenandpork/gopherlol-extend.  Copy -- not fork -- that repos and change as
+// needed.
+//
+// For maintenance, I would of course suggest not copying the github.com/chickenandpork/gopherlol,
+// just import is as gopherlol-extend does.  This allows you to update versions using an eventual
+// go-compatible dependabot or similar to take advantage of any later improvements to this project
+// with the least possible effort.
+//
+// Remember that we need exported symbols, which are capitalized in Go
+type TestMockExtensionCommands struct{}
+
+// Author permits sharing attribution or a URL for more info, or help
+func (c *TestMockExtensionCommands) Author() string {
+	return "https://github.com/chickenandpork"
+}
+
+// Go offers a redirection on "go <something>" but needs to be capitalized as a public symbol
+func (c *TestMockExtensionCommands) Go(cmdArg string) string {
+	return fmt.Sprintf("https://go.example.com/%s", url.QueryEscape(cmdArg))
+}
+
+// Fbgs offers a search of FullBigGrepSearch, as a convenience for the whole word (because 13 characters!)
+func (c *TestMockExtensionCommands) Fbgs(cmdArg string) string {
+	return c.FullBigGrepSearch(cmdArg)
+}
+
+// FullBigGrepSearch offers a search of the prescanned codebase "fbgs <something>" searches for <something>
+func (c *TestMockExtensionCommands) FullBigGrepSearch(cmdArg string) string {
+	return fmt.Sprintf("https://fullbiggrepsearch.example.com/pre-scanned/?q=%s", url.QueryEscape(cmdArg))
 }
