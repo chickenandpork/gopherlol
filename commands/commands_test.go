@@ -19,7 +19,7 @@ func init() {
 // TestHandler codifies the expected behavior of the Handler() to ensure that the freedom to
 // change/refactor/extend does not break current functionality
 func TestHandler(t *testing.T) {
-	logsink = &TestLogger{t: t}
+	assert.Nil(t, SetLogSink(t))
 	tests := []struct {
 		name     string
 		query    string

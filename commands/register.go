@@ -16,8 +16,6 @@ type CommandSource interface {
 var (
 	commandsInstance []CommandSource
 	commandsOnce     sync.Once
-
-	logsink LogSink = &DiscardingLogger{} // default to running quietly
 )
 
 // GetCommands is a singleton-enabling function: it returns the singleton, instantiating if necessary
@@ -25,7 +23,7 @@ func GetCommands() []CommandSource {
 	if commandsInstance == nil {
 		commandsOnce.Do(func() {
 			commandsInstance = make([]CommandSource, 0)
-			logsink.Println("allocating new COmmandSource[]")
+			logsink.Println("allocating new CommandSource[]")
 		})
 	}
 	return commandsInstance
@@ -39,12 +37,12 @@ func GetCommands() []CommandSource {
 // `commands_test.go` for an example of the `init()` registration, or `register_test.go` for an
 // example calling directly.
 func RegisterCommands(c CommandSource) error {
-	logsink.Println("registering new COmmandSource[]")
+	logsink.Println("registering new CommandSource[]")
 	if s := GetCommands(); s != nil {
 
-		logsink.Println("COmmandSource[] len is ", len(commandsInstance))
+		logsink.Println("CommandSource[] len is ", len(commandsInstance))
 		commandsInstance = append(commandsInstance, c)
-		logsink.Print("COmmandSource[] len is ", len(commandsInstance))
+		logsink.Print("CommandSource[] len is ", len(commandsInstance))
 
 		return nil
 	}
