@@ -60,7 +60,6 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		cmdMethod := reflect.ValueOf(source).MethodByName(cmdName)
 
 		if cmdMethod != reflect.ValueOf(nil) {
-			fmt.Sprintf("found: %+v\n", cmdMethod)
 			url := ""
 			cmdMethodNumIn := cmdMethod.Type().NumIn()
 			if cmdMethodNumIn == 0 {
@@ -82,11 +81,12 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 			}
 
 			http.Redirect(w, r, url, http.StatusSeeOther)
+			logsink.Printf("found command: %+v -> redirecting to: %s\n", cmdMethod, url)
 			return
 		}
 	}
 	/* else */
-	fmt.Printf("not found: c: %s a: %s a[]: %+v\n", cmdName, cmdArg, arr)
+	logsink.Printf("not found (forwarding to google): cmd: %s arg: %s args: %+v\n", cmdName, cmdArg, arr)
 
 	// cmdMethod not found => fall back to google
 	url := fmt.Sprintf("https://www.google.com/#q=%s", url.QueryEscape(q))
