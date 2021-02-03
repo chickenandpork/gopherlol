@@ -29,19 +29,19 @@ func TestHandler(t *testing.T) {
 		{
 			"bok",
 			"/?q=bokbokbok", http.StatusSeeOther,
-			"<a href=\"https://www.google.com/#q=bokbokbok\">See Other</a>."},
+			"<a href=\"https://www.google.com/search?q=bokbokbok\">See Other</a>."},
 		{
 			"G20",
 			"/?q=g%20bok", http.StatusSeeOther,
-			"<a href=\"https://www.google.com/#q=bok\">See Other</a>."},
+			"<a href=\"https://www.google.com/search?q=bok\">See Other</a>."},
 		{
 			"Gplus",
 			"/?q=g+bok", http.StatusSeeOther,
-			"<a href=\"https://www.google.com/#q=bok\">See Other</a>."},
+			"<a href=\"https://www.google.com/search?q=bok\">See Other</a>."},
 		{
 			"Gspace",
 			"/?q=g bok", http.StatusSeeOther,
-			"<a href=\"https://www.google.com/#q=bok\">See Other</a>."},
+			"<a href=\"https://www.google.com/search?q=bok\">See Other</a>."},
 		{
 			"So20",
 			"/?q=so%20awesome", http.StatusSeeOther,
@@ -57,7 +57,7 @@ func TestHandler(t *testing.T) {
 		{
 			"fallback",
 			"/?q=mega+awesome", http.StatusSeeOther,
-			"<a href=\"https://www.google.com/#q=mega+awesome\">See Other</a>."},
+			"<a href=\"https://www.google.com/search?q=mega+awesome\">See Other</a>."},
 		{
 			"help",
 			"/?q=help", http.StatusOK,

@@ -89,7 +89,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	logsink.Printf("not found (forwarding to google): cmd: %s arg: %s args: %+v\n", cmdName, cmdArg, arr)
 
 	// cmdMethod not found => fall back to google
-	url := fmt.Sprintf("https://www.google.com/#q=%s", url.QueryEscape(q))
+	url := fmt.Sprintf("https://www.google.com/search?q=%s", url.QueryEscape(q))
 	http.Redirect(w, r, url, http.StatusSeeOther)
 	return
 }

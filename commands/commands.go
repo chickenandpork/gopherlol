@@ -26,7 +26,7 @@ func (c *Commands) List() {
 
 // G as a search prefix hands off to google
 func (c *Commands) G(cmdArg string) string {
-	return fmt.Sprintf("https://www.google.com/#q=%s", url.QueryEscape(cmdArg))
+	return fmt.Sprintf("https://www.google.com/search?q=%s", url.QueryEscape(cmdArg))
 }
 
 // Author retains a note to the original author
