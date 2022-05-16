@@ -32,16 +32,18 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 
 			for i := 0; i < commandsType.NumMethod(); i++ {
 				method := commandsType.Method(i)
+				lower := strings.ToLower(method.Name)
+				if lower != "tryregex" {
 
-				takesArgs := ""
-				if method.Type.NumIn() == 2 {
-					takesArgs = ", takes args"
+					takesArgs := ""
+					if method.Type.NumIn() == 2 {
+						takesArgs = ", takes args"
+					}
+					html.WriteString(fmt.Sprintf(
+						"<li><strong>%s</strong>%s</li>",
+						lower, takesArgs,
+					))
 				}
-				html.WriteString(fmt.Sprintf(
-					"<li><strong>%s</strong>%s</li>",
-					strings.ToLower(method.Name),
-					takesArgs,
-				))
 			}
 		}
 		html.WriteString("</ul>")
@@ -50,6 +52,15 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = fmt.Fprint(w, html.String())
 		return
+	}
+
+	/* else check TryRegex() */
+	for _, source := range GetCommands() {
+		logsink.Printf("checking regex: %s", cmdName)
+		if url := source.TryRegex(cmdName); url != "" {
+			http.Redirect(w, r, url, http.StatusSeeOther)
+			return
+		}
 	}
 
 	/* else */

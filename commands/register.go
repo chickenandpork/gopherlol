@@ -9,6 +9,7 @@ import (
 // less about copyright or notoriety, more about "whom should I ask for details, help, support?"
 type CommandSource interface {
 	Author() string
+	TryRegex(string) string
 }
 
 // We singleton it here for utmost safety and code-simplicity in registering other command sources

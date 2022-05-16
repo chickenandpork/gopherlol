@@ -14,6 +14,11 @@ func (c *TCommand) Author() string {
 	return "test"
 }
 
+// TryRegex is a method of checking a regex
+func (c *TCommand) TryRegex(parm string) string {
+	return ""
+}
+
 // TestRegister confirms that I didn't make an error in the simple singleton registry
 func TestRegister(t *testing.T) {
 	assert.Nil(t, SetLogSink(t))

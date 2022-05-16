@@ -90,6 +90,10 @@ func TestHandler(t *testing.T) {
 			"Go",
 			"/?q=go Errorf", http.StatusSeeOther,
 			"<a href=\"https://go.example.com/Errorf\">See Other</a>."},
+		{
+			"regex",
+			"/?q=ABC-1234", http.StatusSeeOther,
+			"<a href=\"https://two.example.com/ABC-1234\">See Other</a>."},
 	}
 
 	for _, test := range tests {
@@ -123,7 +127,7 @@ func TestHandler(t *testing.T) {
 			// Check the response body is what we expect modulo some whitespace
 			expected := strings.TrimSpace(test.expected)
 			observed := strings.TrimSpace(rr.Body.String())
-			assert.Equalf(t, expected, observed, "handler returned incorrect text: expected %v observed %v", expected, observed)
+			assert.Equalf(t, expected, observed, "handler %s returned incorrect text: expected %v observed %v", test.name, expected, observed)
 		})
 	}
 }
@@ -144,6 +148,14 @@ type TestMockExtensionCommands struct{}
 // Author permits sharing attribution or a URL for more info, or help
 func (c *TestMockExtensionCommands) Author() string {
 	return "https://github.com/chickenandpork"
+}
+
+// TryRegex looks for a XXX-1234 -style pattern
+func (c *TestMockExtensionCommands) TryRegex(parm string) string {
+	if m.Match([]byte(parm)) {
+		return fmt.Sprintf("https://try.example.com/%s", parm)
+	}
+	return ""
 }
 
 // Go offers a redirection on "go <something>" but needs to be capitalized as a public symbol
